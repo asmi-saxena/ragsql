@@ -1,0 +1,33 @@
+# Virtual environment
+venv/
+.env
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+
+# Streamlit cache
+.streamlit/
+
+# Logs
+*.log
+
+# pandas / jupyter
+.ipynb_checkpoints/
+
+# macOS
+.AppleDouble
+.LSOverride
