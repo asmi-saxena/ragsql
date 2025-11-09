@@ -86,6 +86,54 @@ Try queries such as:
 ```bash
 echo "what are the total number of rows in people_info table?" | python main.py
 ```
+### 7) RAG Pipeline Flow Diagram
+                         ┌──────────────────────────┐
+                         │      User Query Input     │
+                         └────────────┬─────────────┘
+                                      │
+                                      ▼
+                      ┌────────────────────────────────┐
+                      │ detect_query_type(query)        │
+                      │ → "retrieval" or "sql_query"    │
+                      └────────────────┬────────────────┘
+                                       │
+                     ┌─────────────────┴───────────────────┐
+                     │                                     │
+          ┌──────────▼───────────┐              ┌──────────▼────────────┐
+          │  Retrieval Intent    │              │   Analytical Intent   │
+          └──────────┬───────────┘              └──────────┬────────────┘
+                     │                                     │
+                     ▼                                     ▼
+        ┌────────────────────────┐            ┌─────────────────────────────┐
+        │ parse_intent(query)    │            │ parse_intent(query)         │
+        │ Detects list/aggregate │            │ Detects aggregate patterns  │
+        │ patterns (names, etc.) │            │ (count, avg, etc.)          │
+        └──────────┬─────────────┘            └──────────┬──────────────────┘
+                   │                                      │
+         ┌─────────▼──────────────┐           ┌───────────▼───────────────┐
+         │ If match: run SQL via  │           │ If match: run SQL via     │
+         │ execute_sql(sql)       │           │ execute_sql(sql)          │
+         │ → explain_sql_result() │           │ → explain_sql_result()    │
+         └─────────┬──────────────┘           └───────────┬───────────────┘
+                   │                                      │
+                   │                                      │
+          ┌────────▼──────────┐                 ┌─────────▼────────────┐
+          │ If no match:      │                 │ If no intent match:  │
+          │ retrieve_from_db()│                 │ generate_sql(query)  │
+          │ → fallback tokens │                 │ (Gemini generates SQL)│
+          └────────┬──────────┘                 └─────────┬────────────┘
+                   │                                      │
+                   ▼                                      ▼
+        ┌───────────────────────┐            ┌─────────────────────────────┐
+        │ generate_answer()     │            │ execute_sql(generated_sql)  │
+        │ (Gemini summarization)│            │ → explain_sql_result()      │
+        └───────────────────────┘            └─────────────────────────────┘
+                   │                                      │
+                   ▼                                      ▼
+           ┌────────────────────┐             ┌──────────────────────────┐
+           │ Natural language   │             │ Natural language          │
+           │ response generated │             │ explanation generated     │
+           └────────────────────┘             └──────────────────────────┘
 
 ## Troubleshooting
 - ModuleNotFoundError: No module named 'mysql'
